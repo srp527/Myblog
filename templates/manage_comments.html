@@ -1,0 +1,124 @@
+{% extends '__base__.html' %}
+
+{% block title %}评论{% endblock %}
+
+{% block beforehead %}
+
+<script type="text/javascript">
+
+    function com_del(data) {
+
+        $.ajax({
+            cache: false,
+            type: "POST",
+            url:  "/blog/article_comment_del/"+data,
+            async: true,
+            beforeSend: function (xhr,settings) {
+                xhr.setRequestHeader("X-CSRFToken" ,"{{ csrf_token }}");
+            },
+            success:function (data) {
+                if (data.status == 'fail'){
+                    if (data.msg == '用户未登录'){
+                        alert(data.msg);
+                        window.location.href="{% url 'user:login' %}";
+                    }else{
+                        return alert(data.msg)
+                    }
+                }else if (data.status == 'success'){
+                    alert(data.msg);
+                    window.location.reload();//刷新当前页面.
+                }
+
+
+            }
+
+
+        })
+     }
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-1-1 uk-margin-bottom">
+        <div class="uk-panel uk-panel-box">
+            <ul class="uk-breadcrumb">
+                <li class="uk-active"><span>评论</span></li>
+                <li><a href="{% url 'blog:article_list' %}">日志</a></li>
+                <li><a href="{% url 'user:user_list' %}">用户</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="uk-width-1-1" >
+
+            {% if article_id == '0' %}
+                <div>所有评论:</div>
+            {% else %}
+                <div>关于<a href="{% url 'blog:article_detail' article_id %}">{{ article.title }}</a>的所有评论:</div>
+            {% endif %}
+
+        <table class="uk-table uk-table-hover">
+            <thead>
+                <tr>
+                    <th class="uk-width-2-10">作者</th>
+                    <th class="uk-width-5-10">内容</th>
+                    <th class="uk-width-2-10">创建时间</th>
+                    <th class="uk-width-1-10">操作</th>
+                </tr>
+            </thead>
+
+            <tbody>
+             {% for comment in comments.object_list %}
+                <tr>
+                    <td>
+                        <span href="">{{ comment.user.username }}</span>
+                    </td>
+                    <td>
+                        <span>{{ comment.comments }}</span>
+                    </td>
+                    <td>
+                        <span>{{ comment.add_time|date:'Y-m-d H:i' }}</span>
+                    </td>
+                    <td>
+                        <a onclick="com_del({{ comment.id }})" class="box"><i class="uk-icon-trash-o"></i></a>
+                    </td>
+                </tr>
+              {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    <div class="pageturn">
+            <ul  class="pagelist">
+
+            {% if comments.has_previous %}
+                <li class="long"><a href="?{{ comments.previous_page_number.querystring }}">上一页</a></li>
+            {% else %}
+                <li class="long"><span class="disabled prev"><a>上一页</a></span></li>
+            {% endif %}
+
+            {% for page in comments.pages %}
+                {% if page %}
+                    {% ifequal page comments.number %}
+                        <li class="active"><a href="?{{ page.querystring }}">{{ page }}</a></li>
+                    {% else %}
+                        <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>
+                    {% endifequal %}
+                {% else %}
+                    <li class="none"><a href="">...</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if comments.has_next %}
+                <li class="long"><a href="?{{ comments.next_page_number.querystring }}">下一页</a></li>
+            {% else %}
+                <li class="long"><span class="disabled next"><a>下一页</a></span></li>
+            {% endif %}
+        </ul>
+    </div>
+
+
+    </div>
+{% endblock %}

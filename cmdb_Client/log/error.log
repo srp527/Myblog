@@ -1,0 +1,92 @@
+2018-06-25 15:02:49,716  - ERROR :  HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/asset (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0327D990>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。',))
+2018-06-25 15:58:14,663  - ERROR :  HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/asset (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x034347B0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。',))
+2018-06-25 19:33:52,121  - ERROR :  [c1.com]资产不存在
+2018-06-25 22:53:17,474  - ERROR :  HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/asset/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x035D3B50>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。',))
+2018-06-26 09:13:58,390  - ERROR :  [c1.com]资产更新异常
+2018-06-26 09:24:39,007  - ERROR :  [c1.com]资产更新异常
+2018-06-26 09:38:21,023  - ERROR :  [c1.com]资产更新异常
+2018-06-26 09:47:44,747  - ERROR :  [c1.com]资产更新异常
+2018-06-26 11:41:47,549  - ERROR :  localhost.localdomain BasicPlugin Error:Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 51, in linux
+    'os_platform': self.os_platform(),
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 20, in os_platform
+    output = self.exec_shell_cmd('uname')
+  File "H:\Myblog\cmdb_Client\src\plugins\base.py", line 47, in exec_shell_cmd
+    output = func(cmd)
+  File "H:\Myblog\cmdb_Client\src\plugins\base.py", line 31, in ssh
+    ssh.connect(hostname=self.hostname, port=settings.SSH_PORT, username=settings.SSH_USER, pkey=private_key)
+  File "H:\Myblog\venv\lib\site-packages\paramiko\client.py", line 329, in connect
+    to_try = list(self._families_and_addresses(hostname, port))
+  File "H:\Myblog\venv\lib\site-packages\paramiko\client.py", line 200, in _families_and_addresses
+    hostname, port, socket.AF_UNSPEC, socket.SOCK_STREAM)
+  File "C:\Python36\lib\socket.py", line 745, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+2018-06-26 11:52:43,128  - ERROR :  localhost.localdomain BasicPlugin Error:Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 51, in linux
+    'os_platform': self.os_platform(),
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 20, in os_platform
+    output = self.exec_shell_cmd('uname')
+  File "H:\Myblog\cmdb_Client\src\plugins\base.py", line 47, in exec_shell_cmd
+    output = func(cmd)
+  File "H:\Myblog\cmdb_Client\src\plugins\base.py", line 31, in ssh
+    ssh.connect(hostname=self.hostname, port=settings.SSH_PORT, username=settings.SSH_USER, pkey=private_key)
+  File "H:\Myblog\venv\lib\site-packages\paramiko\client.py", line 329, in connect
+    to_try = list(self._families_and_addresses(hostname, port))
+  File "H:\Myblog\venv\lib\site-packages\paramiko\client.py", line 200, in _families_and_addresses
+    hostname, port, socket.AF_UNSPEC, socket.SOCK_STREAM)
+  File "C:\Python36\lib\socket.py", line 745, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+2018-06-26 11:54:16,585  - ERROR :  192.168.30.11 BasicPlugin Error:Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 52, in linux
+    'os_version': self.os_version(),
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 32, in os_version
+    result = output.strip().split('\n')[0]
+TypeError: a bytes-like object is required, not 'str'
+
+2018-06-26 12:05:29,446  - ERROR :  192.168.30.11 BasicPlugin Error:Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 53, in linux
+    'os_version': self.os_version(),
+  File "H:\Myblog\cmdb_Client\src\plugins\basic.py", line 33, in os_version
+    result = output.strip().split('\n')[0]
+TypeError: a bytes-like object is required, not 'str'
+
+2018-06-26 12:09:40,146  - ERROR :  192.168.30.11 linux cpu plugin error: Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\cpu.py", line 21, in linux
+    response.data = self.parse(output)
+  File "H:\Myblog\cmdb_Client\src\plugins\cpu.py", line 43, in parse
+    for item in content.split('\n\n'):
+TypeError: a bytes-like object is required, not 'str'
+
+2018-06-26 12:09:50,599  - ERROR :  192.168.30.11 linux disk plugin error: Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\disk.py", line 22, in linux
+    response.data = self.parse(output)
+  File "H:\Myblog\cmdb_Client\src\plugins\disk.py", line 38, in parse
+    for row_line in content.split("\n\n\n\n"):
+TypeError: a bytes-like object is required, not 'str'
+
+2018-06-26 12:10:01,127  - ERROR :  192.168.30.11 linux mainboard plugin error: Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\main_board.py", line 20, in linux
+    response.data = self.parse(output)
+  File "H:\Myblog\cmdb_Client\src\plugins\main_board.py", line 37, in parse
+    for item in content.split('\n'):
+TypeError: a bytes-like object is required, not 'str'
+
+2018-06-26 12:10:11,573  - ERROR :  192.168.30.11 linux memory plugin error: Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\memory.py", line 22, in linux
+    response.data = self.parse(output)
+  File "H:\Myblog\cmdb_Client\src\plugins\memory.py", line 46, in parse
+    devices = content.split('Memory Device')
+TypeError: a bytes-like object is required, not 'str'
+
+2018-06-26 12:10:32,592  - ERROR :  192.168.30.11 linux nic plugin error: Traceback (most recent call last):
+  File "H:\Myblog\cmdb_Client\src\plugins\nic.py", line 22, in linux
+    interfaces_info = self.linux_interfaces()
+  File "H:\Myblog\cmdb_Client\src\plugins\nic.py", line 43, in linux_interfaces
+    ifaces = self._interfaces_ip(cmd1 + '\n' + cmd2)
+TypeError: can't concat str to bytes
+
+2018-06-26 12:29:25,914  - ERROR :  [localhost.localdomain]资产不存在

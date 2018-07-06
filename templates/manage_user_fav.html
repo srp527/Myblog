@@ -1,0 +1,113 @@
+{% extends '__base__.html' %}
+
+{% block title %}日志{% endblock %}
+
+ {% block beforehead %}
+
+ {% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-1-1 uk-margin-bottom">
+        <div class="uk-panel uk-panel-box">
+            <ul class="uk-breadcrumb">
+                <li><a href="{% url 'blog:article_comment_list' 0 %}">评论</a></li>
+                <li><a href="{% url 'blog:article_list' %}">日志</a></li>
+                <li><a href="{% url 'user:user_list' %}">用户</a></li>
+                <li class="uk-active"><span>我的收藏</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div  class="uk-width-1-1">
+    </div>
+
+    <div  class="uk-width-1-1">
+        <a href="" class="uk-button uk-button-primary">我收藏的日志</a>
+
+        <table class="uk-table uk-table-hover">
+            <thead>
+                <tr>
+                    <th class="uk-width-5-10">标题 / 摘要</th>
+                    <th class="uk-width-2-10">作者</th>
+                    <th class="uk-width-2-10">创建时间</th>
+                    <th class="uk-width-1-10">操作</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for article in all_fav_articles.object_list %}
+                <tr>
+                    <td>
+                        <a target="_blank" href="{% url 'blog:article_detail' article.id %}" >{{ article.title }}</a>
+                    </td>
+                    <td>
+                        <a target="_blank" href=""  >{{ article.user.username }}</a>
+                    </td>
+                    <td>
+                        <span >{{ article.add_time | date:"Y-m-d H:i"}}</span>
+                    </td>
+                    <td>
+                       <div id="del_fav" data-favid="{{ article.id }}" class="uk-icon-trash-o"></div>
+                    </td>
+                </tr>
+
+
+              {% endfor %}
+             <script type="text/javascript">
+
+                 $('#del_fav').on('click', function(){
+                    var _this = $(this),
+                    favid = _this.attr('data-favid');
+                    $.ajax({
+                            cache: false,
+                            type: "POST",
+                            url: "{% url 'user:add_fav' %}",
+                            data: {
+                                fav_type: 1,
+                                fav_id: favid,
+                                csrfmiddlewaretoken: '{{ csrf_token }}'
+                            },
+                            async: true,
+                            success: function(data) {
+                                Dml.fun.winReload();
+                            }
+                        });
+                });
+            </script>
+            </tbody>
+
+        </table>
+
+        <div class="pageturn">
+        <ul  class="pagelist">
+
+            {% if all_fav_articles.has_previous %}
+                <li class="long"><a href="?{{ all_fav_articles.previous_page_number.querystring }}">上一页</a></li>
+            {% else %}
+                <li class="long"><span class="disabled prev"><a>上一页</a></span></li>
+            {% endif %}
+
+            {% for page in all_fav_articles.pages %}
+                {% if page %}
+                    {% ifequal page all_fav_articles.number %}
+                        <li class="active"><a href="?{{ page.querystring }}">{{ page }}</a></li>
+                    {% else %}
+                        <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>
+                    {% endifequal %}
+                {% else %}
+                    <li class="none"><a href="">...</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if all_fav_articles.has_next %}
+                <li class="long"><a href="?{{ all_fav_articles.next_page_number.querystring }}">下一页</a></li>
+            {% else %}
+                <li class="long"><span class="disabled next"><a>下一页</a></span></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+
+
+查看cpu信息:
+    cat /proc/cpuinfo
+
+查看主板:
+    sudo dmidecode -t1
+
+查看内存:
+    sudo dmidecode  -q -t 17 2>/dev/null
+
+centos 查看硬盘信息:
+    smartctl --all /dev/sda    #系统自带的命令
+    sudo MegaCli  -PDList -aALL  #ubuntu安装megacli
+
+查看网卡:
+    sudo ip link show
+    sudo ip addr show

@@ -1,0 +1,286 @@
+{% extends '__base__.html' %}
+
+{% block title %}{{ article_detail.title }}{% endblock %}
+
+{% block beforehead %}
+
+<script>
+
+
+function art_comment() {
+
+    {#console.log(art_id)#}
+    var art_comm_content = $('#js-comm-content').val();
+    if(art_comm_content == ""){
+            return alert("内容不能为空")
+         }
+    var art_id = {{ article_detail.id }};
+
+    $.ajax({
+        cache: false,
+        type: "POST",
+        url:"{% url 'blog:article_comment_add' %}",
+        data:{'art_id':art_id, 'art_comm_content':art_comm_content },
+        dataType: "json",
+        async: true,
+        beforeSend:function(xhr, settings){
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+        success: function(data) {
+            if(data.status == 'fail'){
+                if(data.msg == '用户未登录'){
+                    alert(data.msg);
+                    window.location.href="{% url 'user:login' %}";
+                }else{
+                    return  alert(data.msg)
+                }
+            }else if(data.status == 'success'){
+                window.location.reload();//刷新当前页面.
+                return alert(data.msg);
+            }
+        }
+     })
+ }
+
+function art_child_comment(comment_id,reply_id,reply_type,to_user_id) {
+    var text_id = 'js-child-comment'+reply_id;
+    var art_comm_content = $('#'+text_id ).val();
+    if(art_comm_content == ""){
+            return alert("回复内容不能为空")
+         }
+
+    $.ajax({
+        cache: false,
+        type: "POST",
+        url:"{% url 'blog:article_reply_comment_add' %}",
+        data:{'comment_id':comment_id,'reply_id':reply_id, 'reply_type':reply_type, 'to_user_id':to_user_id, 'art_comm_content':art_comm_content },
+        dataType: "json",
+        async: true,
+        beforeSend:function(xhr, settings){
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+        success: function(data) {
+            if(data.status == 'fail'){
+                if(data.msg == '用户未登录'){
+                    alert(data.msg);
+                    window.location.href="{% url 'user:login' %}";
+                }else{
+                    return  alert(data.msg)
+                }
+            }else if(data.status == 'success'){
+                window.location.reload();//刷新当前页面.
+                {#return alert(data.msg);#}
+            }
+        }
+    })
+}
+
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-medium-3-4">
+     {% autoescape off %}
+        <article class="uk-article">
+            <h1>{{ article_detail.title }}</h1>
+            <h5>{{ article_detail.desc }}</h5>
+
+            <p class="uk-article-meta">发表于{{ article_detail.add_time | date:"Y-m-d H:i"}} 作者:<a href="">{{ article_detail.user.username }}</a></p>
+        <hr class="uk-article-divider">
+           <p>{{ article_detail.content }}</p>
+        </article>
+
+        <hr class="uk-article-divider">
+     {% endautoescape %}
+
+    {% if request.user.is_authenticated %}
+
+        <h3>发表评论</h3>
+
+        <article class="uk-comment">
+            <header class="uk-comment-header">
+                <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ MEDIA_URL }}{{ request.user.image }}">
+                <h4 class="uk-comment-title">{{ request.user.username }}</h4>
+            </header>
+            <div class="uk-comment-body">
+                <form id="form-comment" class="uk-form">
+                    <div class="uk-alert uk-alert-danger uk-hidden"></div>
+                    <div class="uk-form-row">
+                        <textarea id="js-comm-content" rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
+                    </div>
+                    <div class="uk-form-row">
+                        <button onclick="art_comment()" type="button" class="uk-button uk-button-primary"><i class="uk-icon-comment"></i> 发表评论</button>
+                    </div>
+                </form>
+            </div>
+        </article>
+
+        <hr class="uk-article-divider">
+    {% endif %}
+
+        <h3>最新评论</h3>
+        <ul class="uk-comment-list">
+           {% if article_detail.getArtcileComment %}
+               {% for comment in article_detail.getArtcileComment %}
+                <li>
+                    <!--  一级评论 start  -->
+                    <article class="uk-comment">
+                        <header class="uk-comment-header">
+                            <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ MEDIA_URL }}{{ comment.user.image }}">
+                            <h4 class="uk-comment-title"><a href="">{{ comment.user.username }}</a>  {% if comment.user.id == article_detail.user.id %}(作者){% endif %}</h4>
+                        <p class="uk-comment-meta">{{ comment.add_time |date:'Y-m-d H:i' }} <a onclick="popup0{{ comment.id }}()">回复</a></p>
+                         <hr color="red" width="805" style=""/>
+                        <div class="uk-comment-body">
+                            {{ comment.comments }}
+                         <div id="js-child-content{{ comment.id }}" hidden >
+                                <textarea id="js-child-comment{{ comment.id }}"  rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
+                                <input id="jsComment" onclick="art_child_comment({{ comment.id }},{{ comment.id }},1,{{ comment.user.id }})" type="button" class="uk-button uk-button-primary" value="回复评论">
+                                     <a onclick="pack_up0{{ comment.id }}()">收起</a>
+                        </div> <!-- 一级 回复框 -->
+                        <script>
+                                  function popup0{{ comment.id }}() {  $("#js-child-content{{ comment.id }}").show() }
+                                  function pack_up0{{ comment.id }}() { $("#js-child-content{{ comment.id }}").hide() }</script>
+                <!-- 二级评论 start 回复评论 -->
+                {% if comment.getReplyComment %}
+                  {% for childcomment in comment.getReplyComment %}
+                     {% for user in all_users %}
+                           {% if user.id == childcomment.user %}
+                           {% if  childcomment.reply_type == '1'%}
+                            <article class="uk-comment">
+                                <header class="uk-comment-header">
+                                    <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ MEDIA_URL }}{{ user.image }}">
+                                    <h4 class="uk-comment-title"><a href="">{{ user.username }}{% if childcomment.user == article_detail.user.id %}(作者){% endif %}</a>
+                                        >>回复<a href="">{{ comment.user.username }}{% if comment.user.id == article_detail.user.id %}(作者){% endif %}</a>
+                                    </h4>
+                                    <p class="uk-comment-meta">{{ childcomment.add_time |date:'Y-m-d H:i' }}<a onclick="popup_clidea{{ childcomment.id }}()">回复</a></p>
+                                            <hr color="red" width="770" style=""/>
+                                            <div class="uk-comment-body">
+                                                 {{ childcomment.comments }}
+                                            </div>
+                                </header>
+                                            <div id="js-child-content{{ childcomment.id }}" hidden >
+                                    <textarea id="js-child-comment{{ childcomment.id }}"  rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
+                                    <input id="jsReplyComment" onclick="art_child_comment({{ comment.id }},{{ childcomment.id }},2,{{ user.id }})" type="button" class="uk-button uk-button-primary" value="回复评论">
+                                    <a onclick="packup_clidea{{ childcomment.id }}()">收起</a></div>  <!-- 二级 回复评论 回复框 -->
+                                            <script> console.info(packup_clide1{{ childcomment.id }});
+                                          function popup_clidea{{ childcomment.id }}() {  $("#js-child-content{{ childcomment.id }}").show() }
+                                          function packup_clidea{{ childcomment.id }}() { $("#js-child-content{{ childcomment.id }}").hide() }
+                                </script>
+                            </article>
+                          {% endif %}
+                         {% endif %}
+
+                               <!-- 二级评论 end 回复评论 -->
+                               <!-- 二级评论 start 回复回复 -->
+                         {% if   childcomment.reply_type == '2'%}
+                                 {% if user.id == childcomment.user %}
+                            <article class="uk-comment">
+                                      <header class="uk-comment-header">
+                                          <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ MEDIA_URL }}{{ user.image }}">
+                                          <h4 class="uk-comment-title"><a href="">{{ user.username }}{% if user.id == article_detail.user.id %}(作者){% endif %}</a>
+                                              >>回复<a href="">{{ childcomment.to_user.username }}{% if childcomment.to_user.id == article_detail.user.id %}(作者){% endif %}</a>
+                                          </h4>
+                                          <p class="uk-comment-meta">{{ childcomment.add_time |date:'Y-m-d H:i' }}<a onclick="popup_clideb{{ childcomment.id }}()">回复</a></p>
+                                                    <hr color="red" width="770" style=""/>
+                                                    <div class="uk-comment-body">
+                                                            {{ childcomment.comments }}
+                                                    </div>
+                                      </header>
+                                                <div id="js-child-content{{ childcomment.id }}" hidden >
+                                                    <textarea id="js-child-comment{{ childcomment.id }}"  rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
+                                                    <input id="jsReplyComment" onclick="art_child_comment({{ comment.id }},{{ childcomment.id }},2,{{ user.id }})" type="button" class="uk-button uk-button-primary" value="回复评论">
+                                                    <a onclick="packup_clideb{{ childcomment.id }}()">收起</a></div>  <!-- 二级 回复回复  回复框 -->
+                                                <script>
+                                                          function popup_clideb{{ childcomment.id }}() {  $("#js-child-content{{ childcomment.id }}").show() }
+                                                          function packup_clideb{{ childcomment.id }}() { $("#js-child-content{{ childcomment.id }}").hide() }
+                                                </script>
+                            </article>
+                                             <!-- 二级评论 end 回复回复 -->
+                                 {% endif %}
+{#                             {% endfor %}#}
+                             {% endif %}
+
+                         {% endfor %}
+                      {% endfor %}
+                {% endif %}
+
+                        </div>
+                        </header>
+
+                    </article>
+                     <!-- 一级评论区域  end  评论 -->
+                </li>
+         {% endfor %}
+        {% else %}
+            <p>还没有人评论...</p>
+        {% endif %}
+        </ul>
+        <li><a href="{% url 'blog:article_comment_list' article_detail.id %}"> 查看更多评论...</a></li>
+    </div>
+
+    <div class="uk-width-medium-1-4">
+        <div class="uk-panel uk-panel-box">
+            <div class="uk-text-center">
+                <img class="uk-border-circle" width="120" height="120" src="{{ MEDIA_URL }}{{ article_detail.user.image }}">
+                <h3><a href=""> {{ article_detail.user.username }}</a></h3>
+            </div>
+            <div class="btn  colectgroupbtn notlogin" data-favid="14" id="jsFavArticleBtn">
+                         {% if has_fav_article %}已收藏文章{% else %}收藏文章{% endif %}
+            </div>
+            <div class="btn  colectgroupbtn notlogin" data-favid="14" id="jsFavUserBtn">
+                         {% if has_fav_user %}已关注作者{% else %}关注作者{% endif %}
+            </div>
+        </div>
+        <div class="uk-panel uk-panel-header">
+            <h3 class="uk-panel-title">友情链接</h3>
+            <ul class="uk-list uk-list-line">
+                <li><i class="uk-icon-link"></i> <a href="#">编程</a></li>
+                <li><i class="uk-icon-link"></i> <a href="#">思考</a></li>
+                <li><i class="uk-icon-link"></i> <a href="#">读书</a></li>
+            </ul>
+        </div>
+    </div>
+
+   <script type="text/javascript">
+        //收藏文章
+        function add_fav(current_elem, fav_id, fav_type){
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url:"{% url 'user:add_fav' %}",
+                data:{'fav_id':fav_id, 'fav_type':fav_type},
+                async: true,
+                beforeSend:function(xhr, settings){
+                    xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+                },
+                success: function(data) {
+                    if(data.status == 'fail'){
+                        if(data.msg == '用户未登录'){
+                            window.location.href="{% url 'user:login' %}";
+                        }else{
+                            current_elem.text(data.msg)
+                        }
+
+                    }else if(data.status == 'success'){
+                        current_elem.text(data.msg)
+                    }
+                },
+            });
+        }
+        // 添加一个监听事件
+        $('#jsFavArticleBtn').on('click', function(){
+            add_fav($(this), {{ article_detail.id }}, 1);//第三个参数1表示 UserFavorite中fav_type为文章
+        });
+        $('#jsFavUserBtn').on('click', function () {
+            add_fav($(this),{{ article_detail.user.id }},2); //第三个参数2表示 UserFavorite中fav_type为作者
+        });
+
+</script>
+
+{% endblock %}
+
+
+
