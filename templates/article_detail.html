@@ -88,7 +88,7 @@ function art_child_comment(comment_id,reply_id,reply_type,to_user_id) {
             <h1>{{ article_detail.title }}</h1>
             <h5>{{ article_detail.desc }}</h5>
 
-            <p class="uk-article-meta">发表于{{ article_detail.add_time | date:"Y-m-d H:i"}} 作者:<a href="">{{ article_detail.user.username }}</a></p>
+            <p class="uk-article-meta">发表于{{ article_detail.add_time | date:"Y-m-d H:i"}} 作者:<a href="">{{ article_detail.user.username }}</a> >>阅读(<a href="">{{ article_detail.click_nums }}</a>) | 评论({{ article_detail.getArtcileCommentCount }})</p>
         <hr class="uk-article-divider">
            <p>{{ article_detail.content }}</p>
         </article>

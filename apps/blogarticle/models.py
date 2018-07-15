@@ -8,15 +8,26 @@ from DjangoUeditor.models import UEditorField
 from users.models import Users
 # Create your models here.
 
+
 class Category(models.Model):
     name = models.CharField(max_length=150,unique=True,verbose_name='类别名称')
     add_time = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = u'文章类别'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.name
+
+    def getArticlecounts(self):
+        return self.article_set.all().count()
+
 
 class Article(models.Model):
     user = models.ForeignKey(Users,verbose_name='文章作者',related_name='articles',null=True, blank=True,on_delete=models.CASCADE)
-    category = models.CharField(max_length=20, verbose_name='文章类别', default='python基础知识')
-    # category = models.ForeignKey(Category, verbose_name='文章类别', null=True, blank=True, on_delete=models.CASCADE)
+    # category = models.CharField(max_length=20, verbose_name='文章类别', default='python基础知识')
+    category = models.ForeignKey(Category, verbose_name='文章类别', null=True, blank=True, on_delete=models.CASCADE)
     title = models.CharField(max_length=50,verbose_name='文章标题')
     desc = models.CharField(max_length=300,verbose_name='文章描述')
     content = UEditorField(verbose_name='文章内容',width=600,height=300,

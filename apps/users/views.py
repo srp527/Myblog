@@ -12,9 +12,10 @@ from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.urls import reverse
 
 from .models import Users,EmailVerifyRecord
-from blogarticle.models import Article
+from blogarticle.models import Article,Category
 from operation.models import ArticleComments,UserFav
 from .forms import LoginForm,RegisterForm,UploadImageForm,UserInfoForm,ModifyPwdForm
+from .login_check import LoginRequiredMixin
 
 # Create your views here.
 
@@ -30,11 +31,19 @@ class CustomBackend(ModelBackend):
             return None
 
 
+#方式一
 class IndexView(View):
     '''首页'''
     ###### 1--分页 ####
     def get(self,request):
         all_articles = Article.objects.all().order_by('-add_time')
+        article_count = all_articles.count()
+        all_category = Category.objects.all()
+        category = request.GET.get('category','')
+        #根据文章类别筛选 article
+        if category :
+            all_articles = all_articles.filter(category=category)
+
 
         # 对文章进行分页显示
         try:
@@ -46,12 +55,13 @@ class IndexView(View):
 
         return render(request,'index.html',{
             'articles':articles,
+            'all_category':all_category,
+            'article_count':article_count,
         })
 
     ####### 2--瀑布流 #####
     # def get(self,request):
     #     return render(request, 'index_Pinterest.html', {})
-
 
 # class GetArticle(View):
 #     ####### 2--瀑布流 #####
@@ -71,10 +81,12 @@ class IndexView(View):
 #         return JsonResponse(ret)
 #         # return HttpResponse(json.dumps(ret),content_type='application/json')
 
+
 class LoginView(View):
     '''用户登录'''
 
     def get(self,request):
+        request.session['login_from'] = request.META.get('HTTP_REFERER', 'index')
         return render(request,'signin.html',{ })
 
     def post(self,request):
@@ -88,7 +100,8 @@ class LoginView(View):
             if user is not None:
                 user1 = Users.objects.get(Q(username=user_name) | Q(email=user_name))
                 login(request,user)
-                return HttpResponseRedirect(reverse('index'))
+                # return HttpResponseRedirect(reverse('index'))
+                return HttpResponseRedirect(request.session['login_from'],'index')
             else:
                 return render(request, 'signin.html', {'msg': '用户名或密码错误'})
                 # f={'status': 'fail', 'data': 'email', 'message': 'Email not exist.'}
@@ -141,7 +154,7 @@ class RegisterView(View):
             # return render(request, 'register.html', {'register_form': register_form})
 
 
-class UserListView(View):
+class UserListView(LoginRequiredMixin,View):
     '''用户列表页'''
 
     def get(self,request):
@@ -163,14 +176,14 @@ class UserListView(View):
         return render(request,'manage_users.html',{'users':users})
 
 
-class AddDelFavView(View):
+class AddDelFavView(LoginRequiredMixin,View):
     '''用户收藏或取消收藏'''
 
     def post(self,request):
-        # 判断用户是否登录
-        if not request.user.is_authenticated:
-            f = {'status': 'fail', 'msg': '用户未登录'}
-            return HttpResponse(json.dumps(f), content_type='application/json')
+        # # 判断用户是否登录
+        # if not request.user.is_authenticated:
+        #     f = {'status': 'fail', 'msg': '用户未登录'}
+        #     return HttpResponse(json.dumps(f), content_type='application/json')
 
         fav_id = request.POST.get('fav_id',0)
         fav_type = request.POST.get('fav_type',0)
@@ -204,14 +217,14 @@ class AddDelFavView(View):
                 return HttpResponse(json.dumps(f), content_type='application/json')
 
 
-class UserFavView(View):
+class UserFavView(LoginRequiredMixin,View):
     '''用户收藏文章列表页'''
 
     def get(self,request):
         # 判断用户是否登录
-        if not request.user.is_authenticated:
-            f = {'status': 'fail', 'msg': '用户未登录'}
-            return HttpResponse(json.dumps(f), content_type='application/json')
+        # if not request.user.is_authenticated:
+        #     f = {'status': 'fail', 'msg': '用户未登录'}
+        #     return HttpResponse(json.dumps(f), content_type='application/json')
 
         article_list = []
         fav_articles = UserFav.objects.filter(user=request.user,fav_type=1)
@@ -233,7 +246,7 @@ class UserFavView(View):
         })
 
 
-class UserInfoView(View):
+class UserInfoView(LoginRequiredMixin,View):
     '''用户详细信息保存'''
 
     def post(self,request):

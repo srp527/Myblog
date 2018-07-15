@@ -8,9 +8,10 @@ from django.views import View
 from django.http import HttpResponseRedirect,HttpResponse
 from django.urls import reverse
 
-from .models import Article
+from .models import Article,Category
 from operation.models import ArticleComments,ArticleReplyComments,UserFav
 from users.models import Users
+from users.login_check import LoginRequiredMixin
 # Create your views here.
 
 
@@ -78,23 +79,30 @@ class ArticleListView(View):
             'articles':articles,
         })
 
-class ArticleAddView(View):
+
+class ArticleAddView(LoginRequiredMixin,View):
     '''添加新文章'''
 
     def get(self,request):
-        return render(request,'article_add.html',{ })
+        all_categorys = Category.objects.all()
+
+        return render(request,'article_add.html',{
+            'all_categorys':all_categorys,
+        })
 
     def post(self,request):
         # 先判断用户是否登录
-        if not request.user.is_authenticated:
-            f = {'status': 'fail', 'msg': '用户未登录'}
-            return HttpResponse(json.dumps(f), content_type='application/json')
+        # if not request.user.is_authenticated:
+        #     f = {'status': 'fail', 'msg': '用户未登录'}
+        #     return HttpResponse(json.dumps(f), content_type='application/json')
         art_title = request.POST.get('title','')
         art_desc = request.POST.get('desc','')
         art_content = request.POST.get('content','')
+        art_category = request.POST.get('category','')
         art_user = request.user
-
-        article = Article(title=art_title,desc=art_desc,content=art_content,user=art_user)
+        # print('art_category',art_category)
+        art_category = Category.objects.get(id=art_category)
+        article = Article(title=art_title,desc=art_desc,content=art_content,user=art_user,category=art_category)
         article.save()
         # art_id = article.id
         # f1 = {'status': 'success','art_id':art_id}  #传个 art_id过去 保存后可以直接跳转到文章详情页
@@ -102,7 +110,21 @@ class ArticleAddView(View):
         return HttpResponse(json.dumps(f1), content_type='application/json')
 
 
-class ArticleModifyView(View):
+class AddCategoryView(View):
+    '''添加文章类型'''
+    def post(self,request):
+        name = request.POST.get('category','')
+        if name:
+            category = Category()
+            category.name = name
+            category.save()
+            f1 = {'status': 'success', 'msg': '添加成功'}
+            return HttpResponse(json.dumps(f1), content_type='application/json')
+        f1 = {'status': 'fail', 'msg': '添加失败'}
+        return HttpResponse(json.dumps(f1), content_type='application/json')
+
+
+class ArticleModifyView(LoginRequiredMixin,View):
     '''修改文章页'''
 
     def get(self,request,article_id):
@@ -116,9 +138,9 @@ class ArticleModifyView(View):
 
     def post(self,request,article_id):
         # 判断用户是否登录
-        if not request.user.is_authenticated:
-            f = {'status': 'fail', 'msg': '用户未登录'}
-            return HttpResponse(json.dumps(f), content_type='application/json')
+        # if not request.user.is_authenticated:
+        #     f = {'status': 'fail', 'msg': '用户未登录'}
+        #     return HttpResponse(json.dumps(f), content_type='application/json')
 
         article = Article.objects.get(id=article_id)
         #判断用户是否为admin， 再判断是否是本文章用户
@@ -136,14 +158,14 @@ class ArticleModifyView(View):
         return HttpResponse(json.dumps(f1), content_type='application/json')
 
 
-class ArticleDelView(View):
+class ArticleDelView(LoginRequiredMixin,View):
     '''删除文章'''
 
     def post(self,request,article_id):
         # 判断用户是否登录
-        if not request.user.is_authenticated:
-            f = {'status': 'fail', 'msg': '用户未登录'}
-            return HttpResponse(json.dumps(f), content_type='application/json')
+        # if not request.user.is_authenticated:
+        #     f = {'status': 'fail', 'msg': '用户未登录'}
+        #     return HttpResponse(json.dumps(f), content_type='application/json')
 
         article = Article.objects.get(id=article_id)
         # 判断用户是否为admin， 再判断是否是本文章用户
@@ -228,14 +250,14 @@ class ArticleCommentListView(View):
         })
 
 
-class ArticleCommentDelView(View):
+class ArticleCommentDelView(LoginRequiredMixin,View):
     '''删除文章评论'''
 
     def post(self, request, comment_id):
         # 判断用户是否登录
-        if not request.user.is_authenticated:
-            f = {'status': 'fail', 'msg': '用户未登录'}
-            return HttpResponse(json.dumps(f), content_type='application/json')
+        # if not request.user.is_authenticated:
+        #     f = {'status': 'fail', 'msg': '用户未登录'}
+        #     return HttpResponse(json.dumps(f), content_type='application/json')
 
         comment = ArticleComments.objects.get(id=int(comment_id))
         # 判断用户是否为admin， 再判断是否是本评论用户
@@ -249,13 +271,13 @@ class ArticleCommentDelView(View):
         return HttpResponse(json.dumps(f1), content_type='application/json')
 
 
-class ReplyCommentView(View):
+class ReplyCommentView(LoginRequiredMixin,View):
     '''回复评论 回复回复'''
 
     def post(self, request):
-        if not request.user.is_authenticated:
-            f = {'status': 'fail', 'msg': '用户未登录'}
-            return HttpResponse(json.dumps(f), content_type='application/json')
+        # if not request.user.is_authenticated:
+        #     f = {'status': 'fail', 'msg': '用户未登录'}
+        #     return HttpResponse(json.dumps(f), content_type='application/json')
 
         comment_id = request.POST.get('comment_id', 0)   #回复的 回复评论的ID
         reply_id = request.POST.get('reply_id',0)        #回复的 目标评论的ID或目标回复的ID

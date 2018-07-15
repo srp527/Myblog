@@ -27,6 +27,9 @@ class ArticleComments(models.Model):
         return self.articlereplycomments_set.all()
     getReplyComment.short_description = '评论回复'
 
+    def getReplyCommentCount(self):
+        return self.articlereplycomments_set.all().count()
+
 
 class ArticleReplyComments(models.Model):
 

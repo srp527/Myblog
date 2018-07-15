@@ -7,8 +7,11 @@
 
 
     function add_del(th) {
+        {#alert('确定删除文章:<'+art_name+'>吗?');#}
+        var msg = '确定删除该文章吗?';
+        if(confirm(msg)==true){
 
-        $.ajax({
+            $.ajax({
             cache: false,
             type: "POST",
             url:"/blog/article_del/"+th ,
@@ -31,6 +34,10 @@
                 }
             }
         })
+        }
+
+
+
     }
 
 </script>
@@ -77,8 +84,8 @@
                         <span >{{ article.add_time | date:"Y-m-d H:i"}}</span>
                     </td>
                     <td>
-                        <a href="javascript:" onclick="add_del({{ article.id }})"  class="box"><i class="uk-icon-trash-o"></i></a>
-                        <a href="{% url 'blog:article_modify' article.id %}" ><i class="uk-icon-edit"></i></a>
+                        <a href="" onclick="javascript:return add_del({{ article.id }});"  class="box"><i class="uk-icon-trash-o"></i>删除</a>
+                        <a href="{% url 'blog:article_modify' article.id %}" ><i class="uk-icon-edit"></i>编辑</a>
                          <a class="box">
                              <span  style="color:#d05">
                              {% for user_fav in art_favs %}

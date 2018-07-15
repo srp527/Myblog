@@ -27,6 +27,54 @@
 
         <form  id="jsForm" method="post" class="uk-form uk-form-stacked">
 {#            <div class="uk-alert uk-alert-danger uk-hidden"></div>#}
+            <tr class="uk-form-row">
+                <td class="uk-form-label">文章类别:</td>
+                <td align="left">
+                    <select  id="category" >
+                            <option  value="">==请选择==</option>
+                        {% for category in all_categorys %}
+                            <option value={{ category.id }}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" id="add_cate" placeholder="没有? 新建一个类型"><input onclick="add_category()" type="button" class="uk-button uk-button-primary" value="添加" >
+                    <script>
+                        function add_category() {
+                            var category = $("#add_cate").val();
+                            {#console.log('add_category',category);#}
+                            if(category == ''){
+                                alert('请输入一个类型名!');
+                                return
+                            }
+                            $.ajax({
+                                cache: false,
+                                type: "POST",
+                                url:"{% url 'blog:article_category_add' %}",
+                                data:{'category':category},
+                                // data: $("#jsForm").serialize(),
+                                dataType: "json",
+                                async: true,
+                                beforeSend:function(xhr, settings){
+                                    xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+                                },
+                                success: function(data) {
+                                    if(data.status == 'fail'){
+                                        if(data.msg == '添加失败'){
+                                             return  alert(data.msg)
+                                        }else{
+                                           return  alert(data.msg)
+                                        }
+
+                                    }else if(data.status == 'success'){
+                                        window.location.reload();//刷新当前页面.
+
+                                    }
+                                },
+                            })
+                        }
+                    </script>
+                </td>
+            </tr>
+            <hr>
             <div class="uk-form-row">
                 <label class="uk-form-label">标题:</label>
                 <div class="uk-form-controls">
@@ -68,6 +116,13 @@
     //添加文章
     function add_art() {
 
+        var category = $("#category").val();
+        console.log('category:',category)
+        if(category == ""){
+            alert("请选择一个类别");
+            return
+        }
+
         var title = $("#js-title").val();
         if(title == ""){
              alert("标题不能为空");
@@ -89,7 +144,7 @@
             cache: false,
             type: "POST",
             url:"{% url 'blog:article_add' %}",
-            data:{'title':title, 'desc':desc, 'content':content},
+            data:{'title':title, 'desc':desc, 'content':content,'category':category},
             // data: $("#jsForm").serialize(),
             dataType: "json",
             async: true,
@@ -113,6 +168,9 @@
             },
         })
     }
+
+
+
 </script>
 
 {% endblock %}

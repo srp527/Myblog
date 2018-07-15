@@ -12,7 +12,7 @@ class Users(AbstractUser):
                               choices=(('male','男'),('female','女')),default='')
     address = models.CharField(max_length=100,default='',null=True,blank=True)
     mobile = models.CharField(max_length=11, null=True, blank=True)
-    image = models.ImageField(upload_to='image/%Y/%m', default='image/default.png', max_length=100)
+    image = models.ImageField(upload_to='image/%Y/%m', default='image/default.png', null=True,blank=True,max_length=100)
     add_time = models.DateTimeField(default=datetime.now, verbose_name=u'添加时间')
 
     class Meta:

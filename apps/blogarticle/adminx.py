@@ -4,7 +4,7 @@ __date__ = '2018/5/5 14:49'
 
 import xadmin
 
-from .models import Article
+from .models import Article,Category
 
 
 class ArticleAdmin(object):
@@ -17,4 +17,11 @@ class ArticleAdmin(object):
     import_excel = True
 
 
+class CategoryAdmin(object):
+    list_display = ['name','add_time']
+    search_fields = ['name']
+    list_filter = ['name','add_time']
+
+
 xadmin.site.register(Article,ArticleAdmin)
+xadmin.site.register(Category,CategoryAdmin)
