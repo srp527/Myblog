@@ -38,7 +38,7 @@ pycparser==2.18
 Pygments==2.2.0
 PyNaCl==1.2.1
 pytz==2018.4
-PyYAML==3.12
+PyYAML==5.4
 requests==2.19.1
 six==1.10.0
 tablib==0.12.1
